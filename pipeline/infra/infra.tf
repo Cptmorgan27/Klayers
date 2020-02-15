@@ -114,6 +114,10 @@ resource "aws_dynamodb_table" "dynamodb_requirements" {
     range_key = "created_date"
   }
 
+  point_in_time_recovery {
+    enabled = true
+  }
+
 }
 
 ## S3 Bucket
@@ -137,6 +141,13 @@ resource "aws_s3_bucket" "s3bucket_layers" {
     }
   }
 
+  server_side_encryption_configuration {
+    rule {
+      apply_server_side_encryption_by_default {
+        sse_algorithm     = "aws:kms"
+      }
+    }
+  }
 }
 
 ### Outputs for serverless to consume
