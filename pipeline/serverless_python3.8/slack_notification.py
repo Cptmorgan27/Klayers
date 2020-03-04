@@ -12,12 +12,11 @@ logger = logger_setup()
 channel = f"#buildstatus-{os.environ['STAGE'][8:][:-3]}"
 
 # Get Slack Token
-ssm_client = boto3.client('ssm')
+ssm_client = boto3.client("ssm")
 response = ssm_client.get_parameter(
-    Name=os.environ.get('SLACK_TOKEN_PARAMETER'),
-    WithDecryption=True
+    Name=os.environ.get("SLACK_TOKEN_PARAMETER"), WithDecryption=True
 )
-slack_token = response.get('Parameter').get('Value')
+slack_token = response.get("Parameter").get("Value")
 client = slack.WebClient(token=slack_token)
 
 
@@ -29,11 +28,12 @@ def slack_notification_pipeline_error(event, context):
     event: see https://docs.aws.amazon.com/step-functions/latest/dg/cw-events.html
     """
 
-    status = event.get('detail', {}).get('status')
-    package = json.loads(event.get('detail', {}).get('input')).get('package')
+    status = event.get("detail", {}).get("status")
+    package = json.loads(event.get("detail", {}).get("input")).get("package")
 
-    status = post_to_slack(message=f"ERROR: Building {package} status: {status}",
-                           channel=channel)
+    status = post_to_slack(
+        message=f"ERROR: Building {package} status: {status}", channel=channel
+    )
 
     return json.dumps({"status": status})
 
@@ -46,11 +46,11 @@ def slack_notification_publish(event, context):
     event: see https://docs.aws.amazon.com/step-functions/latest/dg/cw-events.html
     """
 
-    status = event.get('detail', {}).get('status', False)
+    status = event.get("detail", {}).get("status", False)
 
-    if status in ['TIMED_OUT', 'ABORTED', 'FAILED']:
+    if status in ["TIMED_OUT", "ABORTED", "FAILED"]:
         message = f"ERROR: Publishing to Github failed with Status:{status}"
-    elif status == 'SUCCEEDED':
+    elif status == "SUCCEEDED":
         message = f"GOOD: Completed this week's build, posted to Github: https://github.com/keithrozario/Klayers"
     else:
         message = f"ERROR: Unknown State of Publish"
@@ -62,10 +62,9 @@ def slack_notification_publish(event, context):
 
 def post_to_slack(message, channel):
 
-    response = client.chat_postMessage(channel=channel,
-                                       text=message)
+    response = client.chat_postMessage(channel=channel, text=message)
 
-    if response['ok']:
+    if response["ok"]:
         logger.info(f"Successfully posted Message:{message} to Channel:#{channel}")
         status = "Success"
     else:
