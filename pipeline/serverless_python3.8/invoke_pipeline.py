@@ -18,18 +18,20 @@ def main(event, context):
 
     packages = get_config.get_packages()
 
-    execution_arns =[]
+    execution_arns = []
 
     for package in packages:
 
-        client = boto3.client('stepfunctions')
-        execution_time = datetime.now().isoformat().replace('-', '').replace(':', '')[:14]
+        client = boto3.client("stepfunctions")
+        execution_time = (
+            datetime.now().isoformat().replace("-", "").replace(":", "")[:14]
+        )
         response = client.start_execution(
-            stateMachineArn=os.environ['PIPELINE_ARN'],
+            stateMachineArn=os.environ["PIPELINE_ARN"],
             name=f"{package}_{execution_time}",
-            input=json.dumps({"package": package})
+            input=json.dumps({"package": package}),
         )
 
-        execution_arns.append(response['executionArn'])
+        execution_arns.append(response["executionArn"])
 
     return {"arns": execution_arns}
