@@ -4,6 +4,9 @@ import json
 import time
 from datetime import datetime
 
+aws_profile = 'KlayersDev'
+aws_region = 'ap-southeast-1'
+
 
 def execute_sf(sf_arn, input):
     """
@@ -13,8 +16,8 @@ def execute_sf(sf_arn, input):
     :return: Status of Step function ('SUCCEEDED'|'FAILED'|'TIMED_OUT'|'ABORTED')
     """
 
-    session = boto3.Session(profile_name='KlayersDev')
-    sf_client = session.client('stepfunctions', region_name='ap-southeast-1')
+    session = boto3.Session(profile_name=aws_profile)
+    sf_client = session.client('stepfunctions', region_name=aws_region)
 
     unique_execution_name = f"test-{datetime.now().isoformat()[:-7]}".replace(":", "")
     response = sf_client.start_execution(
@@ -46,8 +49,8 @@ def get_pipeline_arn(step_function_name_endswith='pipelineArn'):
 
     return: the arn of the specified pipeline ending with
     """
-    session = boto3.Session(profile_name='KlayersDev')
-    client = session.client('cloudformation', region_name='ap-southeast-1')
+    session = boto3.Session(profile_name=aws_profile)
+    client = session.client('cloudformation', region_name=aws_region)
 
     response = client.describe_stacks(
         StackName='kl-Klayers-defaultp38'
@@ -67,7 +70,7 @@ def test_pipeline():
     assert execute_sf(sf_arn=pipeline_arn, input=input) == "SUCCEEDED"
 
     # Install idna
-    input = json.dumps({"package": "idna"})
+    input = json.dumps({"package": "crhelper"})
     assert execute_sf(sf_arn=pipeline_arn,
                       input=input) == "SUCCEEDED"
 
